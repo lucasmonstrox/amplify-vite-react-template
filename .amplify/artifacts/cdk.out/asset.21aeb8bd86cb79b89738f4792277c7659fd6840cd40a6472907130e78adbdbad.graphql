@@ -1,0 +1,229 @@
+type Attachment @aws_iam @aws_cognito_user_pools {
+  id: ID!
+  data: AWSJSON
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  owner: String
+}
+
+input AmplifyAIConversationTurnErrorInput {
+  errorType: String!
+  message: String!
+}
+
+input ModelStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelBooleanInput {
+  ne: Boolean
+  eq: Boolean
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+}
+
+input ModelIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  attributeExists: Boolean
+  attributeType: ModelAttributeTypes
+  size: ModelSizeInput
+}
+
+input ModelSubscriptionStringInput {
+  ne: String
+  eq: String
+  le: String
+  lt: String
+  ge: String
+  gt: String
+  contains: String
+  notContains: String
+  between: [String]
+  beginsWith: String
+  in: [String]
+  notIn: [String]
+}
+
+input ModelSubscriptionIntInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+  in: [Int]
+  notIn: [Int]
+}
+
+input ModelSubscriptionFloatInput {
+  ne: Float
+  eq: Float
+  le: Float
+  lt: Float
+  ge: Float
+  gt: Float
+  between: [Float]
+  in: [Float]
+  notIn: [Float]
+}
+
+input ModelSubscriptionBooleanInput {
+  ne: Boolean
+  eq: Boolean
+}
+
+input ModelSubscriptionIDInput {
+  ne: ID
+  eq: ID
+  le: ID
+  lt: ID
+  ge: ID
+  gt: ID
+  contains: ID
+  notContains: ID
+  between: [ID]
+  beginsWith: ID
+  in: [ID]
+  notIn: [ID]
+}
+
+enum ModelAttributeTypes {
+  binary
+  binarySet
+  bool
+  list
+  map
+  number
+  numberSet
+  string
+  stringSet
+  _null
+}
+
+input ModelSizeInput {
+  ne: Int
+  eq: Int
+  le: Int
+  lt: Int
+  ge: Int
+  gt: Int
+  between: [Int]
+}
+
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+
+type ModelAttachmentConnection @aws_iam @aws_cognito_user_pools {
+  items: [Attachment]!
+  nextToken: String
+}
+
+input ModelAttachmentFilterInput {
+  id: ModelIDInput
+  data: ModelStringInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  and: [ModelAttachmentFilterInput]
+  or: [ModelAttachmentFilterInput]
+  not: ModelAttachmentFilterInput
+  owner: ModelStringInput
+}
+
+type Query {
+  getAttachment(id: ID!): Attachment @aws_iam @aws_cognito_user_pools
+  listAttachments(id: ID, filter: ModelAttachmentFilterInput, limit: Int, nextToken: String, sortDirection: ModelSortDirection): ModelAttachmentConnection @aws_iam @aws_cognito_user_pools
+}
+
+input ModelAttachmentConditionInput {
+  data: ModelStringInput
+  and: [ModelAttachmentConditionInput]
+  or: [ModelAttachmentConditionInput]
+  not: ModelAttachmentConditionInput
+  createdAt: ModelStringInput
+  updatedAt: ModelStringInput
+  owner: ModelStringInput
+}
+
+input CreateAttachmentInput {
+  id: ID
+  data: AWSJSON
+}
+
+input UpdateAttachmentInput {
+  id: ID!
+  data: AWSJSON
+}
+
+input DeleteAttachmentInput {
+  id: ID!
+}
+
+type Mutation {
+  createAttachment(input: CreateAttachmentInput!, condition: ModelAttachmentConditionInput): Attachment @aws_iam @aws_cognito_user_pools
+  updateAttachment(input: UpdateAttachmentInput!, condition: ModelAttachmentConditionInput): Attachment @aws_iam @aws_cognito_user_pools
+  deleteAttachment(input: DeleteAttachmentInput!, condition: ModelAttachmentConditionInput): Attachment @aws_iam @aws_cognito_user_pools
+}
+
+input ModelSubscriptionAttachmentFilterInput {
+  id: ModelSubscriptionIDInput
+  data: ModelSubscriptionStringInput
+  createdAt: ModelSubscriptionStringInput
+  updatedAt: ModelSubscriptionStringInput
+  and: [ModelSubscriptionAttachmentFilterInput]
+  or: [ModelSubscriptionAttachmentFilterInput]
+  owner: ModelStringInput
+}
+
+type Subscription {
+  onCreateAttachment(filter: ModelSubscriptionAttachmentFilterInput, owner: String): Attachment @aws_subscribe(mutations: ["createAttachment"]) @aws_iam @aws_cognito_user_pools
+  onUpdateAttachment(filter: ModelSubscriptionAttachmentFilterInput, owner: String): Attachment @aws_subscribe(mutations: ["updateAttachment"]) @aws_iam @aws_cognito_user_pools
+  onDeleteAttachment(filter: ModelSubscriptionAttachmentFilterInput, owner: String): Attachment @aws_subscribe(mutations: ["deleteAttachment"]) @aws_iam @aws_cognito_user_pools
+}
