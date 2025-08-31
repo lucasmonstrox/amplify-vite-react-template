@@ -1,17 +1,16 @@
 "use client";
 
-import { withAuthenticator } from "@aws-amplify/ui-react";
+import { useAuthenticator } from "@aws-amplify/ui-react";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export const LogoutButton = withAuthenticator(function LogoutButton({
-  signOut,
-}) {
+export function LogoutButton() {
+  const { signOut } = useAuthenticator();
   const router = useRouter();
 
   const handleLogout = async () => {
-    await signOut!();
+    await signOut();
     router.push("/login");
   };
 
@@ -26,4 +25,4 @@ export const LogoutButton = withAuthenticator(function LogoutButton({
       <span className="hidden sm:inline">Sair</span>
     </Button>
   );
-});
+}

@@ -1,7 +1,7 @@
 "use client";
 
 import { withAuthenticator } from "@aws-amplify/ui-react";
-import { AttachmentForm } from "@/components/attachment-form";
+import { AttachmentForm } from "./components/attachment-form";
 
 function NewAttachmentPage() {
   return (

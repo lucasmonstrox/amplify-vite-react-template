@@ -8,5 +8,15 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  return <Authenticator>{children}</Authenticator>;
+  return (
+    <Authenticator
+      initialState="signIn"
+      loginMechanisms={["email"]}
+      signUpAttributes={["email"]}
+      socialProviders={[]}
+      hideSignUp={true}
+    >
+      {children}
+    </Authenticator>
+  );
 }

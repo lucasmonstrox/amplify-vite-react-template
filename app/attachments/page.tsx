@@ -1,9 +1,15 @@
 "use client";
 
-import { withAuthenticator } from "@aws-amplify/ui-react";
-import { AttachmentsList } from "@/components/attachments-list";
+import { useAuthenticator } from "@aws-amplify/ui-react";
+import { AttachmentsList } from "./components/attachments-list";
 
-function AttachmentsPage() {
+export default function AttachmentsPage() {
+  const { user } = useAuthenticator();
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="p-4">
       <div className="container mx-auto py-8">
@@ -12,12 +18,3 @@ function AttachmentsPage() {
     </div>
   );
 }
-
-// Configuração específica do withAuthenticator
-export default withAuthenticator(AttachmentsPage, {
-  initialState: "signIn",
-  loginMechanisms: ["email"],
-  signUpAttributes: ["email"],
-  socialProviders: [],
-  hideSignUp: true,
-});
