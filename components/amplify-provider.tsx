@@ -23,7 +23,6 @@ const config = {
   },
 };
 
-console.log("Configurando Amplify com:", config);
 Amplify.configure(config);
 
 export function AmplifyProvider({ children }: AmplifyProviderProps) {

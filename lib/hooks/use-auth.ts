@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
-import { getCurrentUser, signOut } from "aws-amplify/auth";
+import { AuthUser, getCurrentUser, signOut } from "aws-amplify/auth";
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
 
   useEffect(() => {
     checkAuthStatus();
@@ -17,7 +17,7 @@ export function useAuth() {
       setUser(currentUser);
       setIsAuthenticated(true);
     } catch (error) {
-      console.log("Usuário não autenticado");
+      console.log("Usuário não autenticado", error);
       setUser(null);
       setIsAuthenticated(false);
     } finally {

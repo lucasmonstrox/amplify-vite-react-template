@@ -72,7 +72,7 @@ export function AttachmentForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const form = useForm<AttachmentFormData>({
     resolver: zodResolver(attachmentSchema),
@@ -122,14 +122,14 @@ export function AttachmentForm() {
 
   const watchedGdeType = form.watch("gdeType");
   const watchedDocumentType = form.watch("documentType");
-  
+
   // Debug: Log dos erros do formulário
   console.log("=== DEBUG: ERROS DO FORMULÁRIO ===");
   console.log("formState.errors:", form.formState.errors);
   console.log("formState.isValid:", form.formState.isValid);
   console.log("formState.isDirty:", form.formState.isDirty);
   console.log("formState.isSubmitting:", form.formState.isSubmitting);
-  
+
   // Debug: Log dos valores dos campos
   const formValues = form.getValues();
   console.log("=== VALORES DOS CAMPOS ===");
@@ -140,7 +140,7 @@ export function AttachmentForm() {
   console.log("orientadorDocente:", formValues.orientadorDocente);
   console.log("emailOrientador:", formValues.emailOrientador);
   console.log("temLocalEstagio:", formValues.temLocalEstagio);
-  
+
   // Debug: Log detalhado dos erros
   if (Object.keys(form.formState.errors).length > 0) {
     console.log("=== ERROS DETALHADOS ===");
@@ -225,8 +225,14 @@ export function AttachmentForm() {
       console.error("=== ERRO NO ENVIO ===");
       console.error("Erro completo:", error);
       console.error("Tipo do erro:", typeof error);
-      console.error("Mensagem do erro:", error instanceof Error ? error.message : "Erro desconhecido");
-      setError("Erro ao criar attachment: " + (error instanceof Error ? error.message : "Erro desconhecido"));
+      console.error(
+        "Mensagem do erro:",
+        error instanceof Error ? error.message : "Erro desconhecido"
+      );
+      setError(
+        "Erro ao criar attachment: " +
+          (error instanceof Error ? error.message : "Erro desconhecido")
+      );
     }
   }
 
@@ -1308,8 +1314,8 @@ export function AttachmentForm() {
                 {createLoading
                   ? "Enviando..."
                   : currentStep === 1
-                  ? "Próximo"
-                  : "Enviar Anexo"}
+                    ? "Próximo"
+                    : "Enviar Anexo"}
               </Button>
             </div>
           </form>
