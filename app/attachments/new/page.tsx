@@ -1,6 +1,9 @@
+"use client";
+
+import { withAuthenticator } from "@aws-amplify/ui-react";
 import { AttachmentForm } from "@/components/attachment-form";
 
-export default function NewAttachmentPage() {
+function NewAttachmentPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
       <div className="container mx-auto py-8">
@@ -19,3 +22,5 @@ export default function NewAttachmentPage() {
     </div>
   );
 }
+
+export default withAuthenticator(NewAttachmentPage);

@@ -1,6 +1,6 @@
 import { a, defineData, type ClientSchema } from "@aws-amplify/backend";
 
-const schema = a.schema({
+export const schema = a.schema({
   Attachment: a
     .model({
       id: a.id(),

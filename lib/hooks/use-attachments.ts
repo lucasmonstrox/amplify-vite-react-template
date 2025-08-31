@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { client } from "@/lib/graphql-client";
-import { Schema } from "@/amplify/data/resource";
+import { generateClient } from "aws-amplify/api";
+import { Attachment } from "@/API";
+import { listAttachments } from "@/queries";
 
-type Attachment = Schema["Attachment"];
+const client = generateClient();
 
 export function useAttachments() {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
@@ -14,8 +15,10 @@ export function useAttachments() {
       setLoading(true);
       setError(null);
 
-      const response = await client.models.Attachment.list();
-      setAttachments(response.data);
+      const response = await client.graphql({
+        query: listAttachments,
+      });
+      setAttachments(response.data.listAttachments.items || []);
     } catch (err) {
       console.error("Erro ao buscar attachments:", err);
       setError(err instanceof Error ? err.message : "Erro desconhecido");

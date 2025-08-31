@@ -47,7 +47,7 @@ export const attachmentSchema = z
     temasAreasEA3: z.string().optional(),
     objetivosPlanoTrabalho: z.string().optional(),
     nomeOrientadorEA3: z.string().optional(),
-    emailOrientadorEA3: z.string().email("Email inválido").optional(),
+    emailOrientadorEA3: z.string().optional(),
     supervisorEntidade: z.string().optional(),
     emailSupervisor: z.string().optional(),
     cargoSupervisor: z.string().optional(),

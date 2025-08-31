@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -10,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -25,27 +27,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Plus, Eye, Download, Search, RefreshCw } from "lucide-react";
+import { useAttachments } from "@/lib/hooks/use-attachments";
+import { Loading } from "@/components/ui/loading";
 import {
   GdeType,
   DocumentType,
   gdeTypeLabels,
   documentTypeLabels,
 } from "@/lib/types";
-import {
-  Plus,
-  Search,
-  Filter,
-  Download,
-  Eye,
-  Calendar,
-  RefreshCw,
-} from "lucide-react";
-import Link from "next/link";
-import { useAttachments } from "@/lib/hooks/use-attachments";
-import { Loading } from "@/components/ui/loading";
-import { Schema } from "@/amplify/data/resource";
 
-type Attachment = Schema["Attachment"];
+interface AttachmentData {
+  gdeType?: GdeType;
+  documentType?: DocumentType;
+  fileName?: string;
+  fileSize?: number;
+  submittedAt?: string;
+  documentTypeLabel?: string;
+}
 
 export function AttachmentsList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,15 +60,17 @@ export function AttachmentsList() {
   const filteredAttachments = useMemo(() => {
     return attachments.filter((attachment) => {
       // Extrair dados do JSON para filtros
-      const data = (attachment as any).data as any;
-      const gdeType = data?.gdeType;
-      const documentType = data?.documentType;
-      const fileName = data?.fileName;
-      const submittedAt = data?.submittedAt ? new Date(data.submittedAt) : null;
+      const data = attachment.data
+        ? (JSON.parse(attachment.data) as AttachmentData)
+        : ({} as AttachmentData);
+      const gdeType = data.gdeType;
+      const documentType = data.documentType;
+      const fileName = data.fileName;
+      const submittedAt = data.submittedAt ? new Date(data.submittedAt) : null;
 
       const matchesSearch =
         searchTerm === "" ||
-        (data?.documentTypeLabel &&
+        (data.documentTypeLabel &&
           data.documentTypeLabel
             .toLowerCase()
             .includes(searchTerm.toLowerCase())) ||
@@ -162,88 +163,116 @@ export function AttachmentsList() {
 
       {/* Filtros */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4">
-            {/* Linha principal com busca e ações */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input
-                  placeholder="Buscar por documento ou arquivo..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={clearFilters}>
-                  Limpar Filtros
-                </Button>
-              </div>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5" />
+            Filtros
+          </CardTitle>
+          <CardDescription>
+            Filtre as submissões por tipo, data e texto
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="search">Buscar</Label>
+              <Input
+                id="search"
+                placeholder="Buscar por texto..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
-
-            {/* Filtros avançados colapsáveis */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="gdeType">Tipo de GDE</Label>
               <Select
                 value={gdeTypeFilter}
                 onValueChange={(value) =>
                   setGdeTypeFilter(value as GdeType | "all")
                 }
               >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Tipo de GDE" />
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os tipos</SelectItem>
-                  {Object.entries(gdeTypeLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="emissao">Emissão</SelectItem>
+                  <SelectItem value="submissao">Submissão</SelectItem>
+                  <SelectItem value="resumo">Resumo</SelectItem>
                 </SelectContent>
               </Select>
-
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="documentType">Tipo de Documento</Label>
               <Select
                 value={documentTypeFilter}
                 onValueChange={(value) =>
                   setDocumentTypeFilter(value as DocumentType | "all")
                 }
               >
-                <SelectTrigger className="h-9">
-                  <SelectValue placeholder="Tipo de documento" />
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o tipo" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos os documentos</SelectItem>
-                  {Object.entries(documentTypeLabels).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="proposta-estagio">
+                    Proposta de Estágio
+                  </SelectItem>
+                  <SelectItem value="protocolo-estagio">
+                    Protocolo de Estágio
+                  </SelectItem>
+                  <SelectItem value="requerimento-ucs-atraso">
+                    Requerimento a Estágio com UCs em Atraso
+                  </SelectItem>
+                  <SelectItem value="plano-estagio">
+                    Plano de Estágio
+                  </SelectItem>
+                  <SelectItem value="ata-reuniao-orientador-estagiario">
+                    Ata de Reunião Orientador e Estagiário
+                  </SelectItem>
+                  <SelectItem value="ata-reuniao-orientador-supervisor-estagiario">
+                    Ata de Reunião Orientador, Supervisor e Estagiário
+                  </SelectItem>
+                  <SelectItem value="registro-presencas-diarias">
+                    Registo de Presenças Diárias
+                  </SelectItem>
+                  <SelectItem value="parecer-orientador">
+                    Parecer do Orientador
+                  </SelectItem>
+                  <SelectItem value="parecer-supervisor">
+                    Parecer do Supervisor
+                  </SelectItem>
+                  <SelectItem value="requerimento-adiamento-relatorio">
+                    Requerimento de Adiamento de Entrega do Relatório
+                  </SelectItem>
+                  <SelectItem value="relatorio-estagio">
+                    Relatório de Estágio
+                  </SelectItem>
                 </SelectContent>
               </Select>
-
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dateRange">Período</Label>
+              <div className="flex gap-2">
                 <Input
                   type="date"
-                  placeholder="Data inicial"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="pl-10 h-9"
+                  placeholder="Data inicial"
                 />
-              </div>
-
-              <div className="relative">
-                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   type="date"
-                  placeholder="Data final"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="pl-10 h-9"
+                  placeholder="Data final"
                 />
               </div>
             </div>
+          </div>
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={clearFilters}>
+              Limpar Filtros
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -251,9 +280,9 @@ export function AttachmentsList() {
       {/* Tabela */}
       <Card>
         <CardHeader>
-          <CardTitle>Submissões ({filteredAttachments.length})</CardTitle>
+          <CardTitle>Submissões</CardTitle>
           <CardDescription>
-            Lista de todas as submissões de anexos
+            {filteredAttachments.length} submissão(ões) encontrada(s)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -261,9 +290,9 @@ export function AttachmentsList() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Tipo GDE</TableHead>
-                  <TableHead>Tipo de Documento</TableHead>
-                  <TableHead>Data de Submissão</TableHead>
+                  <TableHead>GDE</TableHead>
+                  <TableHead>Documento</TableHead>
+                  <TableHead>Data</TableHead>
                   <TableHead>Arquivo</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -303,21 +332,24 @@ export function AttachmentsList() {
                   </TableRow>
                 ) : (
                   filteredAttachments.map((attachment) => {
-                    const data = (attachment as any).data as any;
-                    const gdeType = data?.gdeType as GdeType;
-                    const documentType = data?.documentType as DocumentType;
-                    const fileName = data?.fileName;
-                    const fileSize = data?.fileSize;
-                    const submittedAt = data?.submittedAt
+                    const data = attachment.data
+                      ? (JSON.parse(attachment.data) as AttachmentData)
+                      : ({} as AttachmentData);
+                    const gdeType = data.gdeType;
+                    const documentType = data.documentType;
+                    const fileName = data.fileName;
+                    const fileSize = data.fileSize;
+                    const submittedAt = data.submittedAt
                       ? new Date(data.submittedAt)
                       : null;
                     const documentTypeLabel =
-                      data?.documentTypeLabel ||
-                      documentTypeLabels[documentType] ||
-                      "Documento";
+                      data.documentTypeLabel ||
+                      (documentType
+                        ? documentTypeLabels[documentType]
+                        : "Documento");
 
                     return (
-                      <TableRow key={(attachment as any).id}>
+                      <TableRow key={attachment.id}>
                         <TableCell className="font-medium">
                           {gdeType ? gdeTypeLabels[gdeType] : "-"}
                         </TableCell>
@@ -343,9 +375,7 @@ export function AttachmentsList() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <Link
-                              href={`/attachments/${(attachment as any).id}`}
-                            >
+                            <Link href={`/attachments/${attachment.id}`}>
                               <Button variant="ghost" size="sm">
                                 <Eye className="h-4 w-4" />
                               </Button>

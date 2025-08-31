@@ -1,5 +1,6 @@
 "use client";
 
+import { withAuthenticator } from "@aws-amplify/ui-react";
 import { useParams, useRouter } from "next/navigation";
 import {
   Card,
@@ -20,7 +21,6 @@ import {
   XCircle,
   AlertCircle,
 } from "lucide-react";
-import { Schema } from "@/amplify/data/resource";
 import {
   GdeType,
   DocumentType,
@@ -30,9 +30,18 @@ import {
 import { useAttachment } from "@/lib/hooks/use-attachment";
 import { Loading } from "@/components/ui/loading";
 
-type Attachment = Schema["Attachment"];
+interface AttachmentData {
+  gdeType?: GdeType;
+  documentType?: DocumentType;
+  fileName?: string;
+  fileSize?: number;
+  submittedAt?: string;
+  status?: string;
+  hours?: string;
+  documentTypeLabel?: string;
+}
 
-export default function AttachmentDetailPage() {
+function AttachmentDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
@@ -128,16 +137,18 @@ export default function AttachmentDetailPage() {
     );
   }
 
-  const data = (attachment as any).data as any;
-  const gdeType = data?.gdeType as GdeType;
-  const documentType = data?.documentType as DocumentType;
-  const fileName = data?.fileName;
-  const fileSize = data?.fileSize;
-  const submittedAt = data?.submittedAt ? new Date(data.submittedAt) : null;
-  const status = data?.status || "pending";
-  const hours = data?.hours;
+  const data = attachment.data
+    ? (JSON.parse(attachment.data) as AttachmentData)
+    : ({} as AttachmentData);
+  const gdeType = data.gdeType;
+  const documentType = data.documentType;
+  const fileName = data.fileName;
+  const fileSize = data.fileSize;
+  const status = data.status || "pending";
+  const hours = data.hours;
   const documentTypeLabel =
-    data?.documentTypeLabel || documentTypeLabels[documentType] || "Documento";
+    data.documentTypeLabel ||
+    (documentType ? documentTypeLabels[documentType] : "Documento");
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 p-4">
@@ -283,15 +294,7 @@ export default function AttachmentDetailPage() {
                     ID do Attachment
                   </label>
                   <p className="text-sm text-slate-900 dark:text-slate-100 font-mono bg-slate-100 dark:bg-slate-800 p-2 rounded">
-                    {(attachment as any).id}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                    Data de Submissão
-                  </label>
-                  <p className="text-slate-900 dark:text-slate-100">
-                    {submittedAt ? formatDate(submittedAt) : "-"}
+                    {attachment.id}
                   </p>
                 </div>
                 <div>
@@ -299,18 +302,8 @@ export default function AttachmentDetailPage() {
                     Criado em
                   </label>
                   <p className="text-slate-900 dark:text-slate-100">
-                    {(attachment as any).createdAt
-                      ? formatDate(new Date((attachment as any).createdAt))
-                      : "-"}
-                  </p>
-                </div>
-                <div>
-                  <label className="text-sm font-medium text-slate-600 dark:text-slate-400">
-                    Atualizado em
-                  </label>
-                  <p className="text-slate-900 dark:text-slate-100">
-                    {(attachment as any).updatedAt
-                      ? formatDate(new Date((attachment as any).updatedAt))
+                    {attachment.createdAt
+                      ? formatDate(new Date(attachment.createdAt))
                       : "-"}
                   </p>
                 </div>
@@ -331,10 +324,6 @@ export default function AttachmentDetailPage() {
                   <FileText className="h-4 w-4 mr-2" />
                   Visualizar
                 </Button>
-                <Button className="w-full" variant="outline">
-                  <User className="h-4 w-4 mr-2" />
-                  Editar
-                </Button>
               </CardContent>
             </Card>
           </div>
@@ -343,3 +332,5 @@ export default function AttachmentDetailPage() {
     </div>
   );
 }
+
+export default withAuthenticator(AttachmentDetailPage);
