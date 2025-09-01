@@ -1,25 +1,44 @@
-## AWS Amplify Next.js (App Router) Starter Template
+# Rui2K - Sistema de Gerenciamento de Anexos
 
-This repository provides a starter template for creating applications using Next.js (App Router) and AWS Amplify, emphasizing easy setup for authentication, API, and database capabilities.
+Este projeto foi migrado do Next.js para Vite com React Router, mantendo a autenticação do Amplify.
 
-## Overview
+## Configuração
 
-This template equips you with a foundational Next.js application integrated with AWS Amplify, streamlined for scalability and performance. It is ideal for developers looking to jumpstart their project with pre-configured AWS services like Cognito, AppSync, and DynamoDB.
+### Variáveis de Ambiente
 
-## Features
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
 
-- **Authentication**: Setup with Amazon Cognito for secure user authentication.
-- **API**: Ready-to-use GraphQL endpoint with AWS AppSync.
-- **Database**: Real-time database powered by Amazon DynamoDB.
+```env
+VITE_USER_POOL_ID=your-user-pool-id
+VITE_USER_POOL_CLIENT_ID=your-user-pool-client-id
+VITE_GRAPHQL_ENDPOINT=your-graphql-endpoint
+VITE_AWS_REGION=your-aws-region
+```
 
-## Deploying to AWS
+### Instalação
 
-For detailed instructions on deploying your application, refer to the [deployment section](https://docs.amplify.aws/nextjs/start/quickstart/nextjs-app-router-client-components/#deploy-a-fullstack-app-to-aws) of our documentation.
+```bash
+npm install
+```
 
-## Security
+### Execução
 
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+```bash
+npm run dev
+```
 
-## License
+## Estrutura do Projeto
 
-This library is licensed under the MIT-0 License. See the LICENSE file.
+- `/src/components/` - Componentes reutilizáveis
+- `/src/lib/` - Utilitários, hooks e configurações
+- `/src/pages/` - Páginas da aplicação
+- `/amplify/` - Configuração do Amplify
+
+## Rotas
+
+- `/login` - Página de login
+- `/attachments` - Lista de anexos
+- `/attachments/new` - Criar novo anexo
+- `/attachments/:id` - Detalhes do anexo
+
+Todas as rotas (exceto `/login`) são protegidas por autenticação.
