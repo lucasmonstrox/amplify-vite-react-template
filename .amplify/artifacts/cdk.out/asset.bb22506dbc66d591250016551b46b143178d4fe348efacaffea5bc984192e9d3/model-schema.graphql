@@ -1,5 +1,0 @@
-type Attachment @model @auth(rules: [{allow: owner, ownerField: "owner"}])
-{
-  id: ID! @primaryKey
-  data: AWSJSON
-}
