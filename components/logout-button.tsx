@@ -2,16 +2,13 @@
 
 import { useAuthenticator } from "@aws-amplify/ui-react";
 import { LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 export function LogoutButton() {
   const { signOut } = useAuthenticator();
-  const router = useRouter();
 
   const handleLogout = async () => {
     await signOut();
-    router.push("/login");
   };
 
   return (
