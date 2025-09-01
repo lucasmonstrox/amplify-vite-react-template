@@ -16,10 +16,11 @@ frontend:
         - ls -la
         - ls -la .next
   artifacts:
-    baseDirectory: .
+    baseDirectory: .next
     files:
-      - .next/**/*
-      - public/**/*
+      - '**/*'
+  cache:
+    paths:
+      - .next/cache/**/*
+      - .npm/**/*
       - node_modules/**/*
-      - package.json
-      - next.config.ts
