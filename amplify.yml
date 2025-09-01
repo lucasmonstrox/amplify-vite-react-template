@@ -1,16 +1,25 @@
 version: 1
 frontend:
   phases:
+    preBuild:
+      commands:
+        - echo "Node version:"
+        - node --version
+        - echo "NPM version:"
+        - npm --version
+        - npm ci
     build:
       commands:
-        - npm install
+        - echo "Building..."
         - npm run build
+        - echo "Build completed"
+        - ls -la
+        - ls -la .next
   artifacts:
-    baseDirectory: .next
+    baseDirectory: .
     files:
-      - '**/*'
-  cache:
-    paths:
-      - .next/cache/**/*
-      - .npm/**/*
+      - .next/**/*
+      - public/**/*
       - node_modules/**/*
+      - package.json
+      - next.config.ts
