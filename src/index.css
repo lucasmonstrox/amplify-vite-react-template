@@ -120,3 +120,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Padding simples para centralizar o login do Amplify */
+[data-amplify-authenticator] {
+  padding: 2rem !important;
+}

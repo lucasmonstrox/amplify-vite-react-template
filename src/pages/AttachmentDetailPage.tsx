@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Download, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, Download, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -11,10 +11,7 @@ import { Button } from "../components/ui/button";
 import { Loading } from "../components/ui/loading";
 import { useAttachment } from "../lib/hooks/use-attachment";
 import { deleteAttachment } from "../lib/mutations";
-import {
-  gdeTypeLabels,
-  documentTypeLabels,
-} from "../lib/types";
+import { gdeTypeLabels, documentTypeLabels } from "../lib/types";
 
 interface AttachmentData {
   gdeType?: string;
@@ -23,6 +20,60 @@ interface AttachmentData {
   fileSize?: number;
   submittedAt?: string;
   documentTypeLabel?: string;
+  status?: string;
+
+  // Campos específicos para Proposta de Estágio (Anexo I)
+  telefoneAluno?: string;
+  temasAreas?: string;
+  orientadorDocente?: string;
+  emailOrientador?: string;
+  temLocalEstagio?: string;
+
+  // Campos específicos para Protocolo de Estágio (Anexo II)
+  dataInicioEstagio?: string;
+  dataFinalizacaoEstagio?: string;
+  empresaEstagio?: string;
+
+  // Campos específicos para Requerimento a Estágio com UCs em Atraso (Art. 14)
+  telefoneAlunoArt14?: string;
+  numeroUcsAtraso?: string;
+  nomeUcsAtraso?: string;
+
+  // Campos específicos para Plano de Estágio (Anexo III)
+  temasAreasEA3?: string;
+  objetivosPlanoTrabalho?: string;
+  nomeOrientadorEA3?: string;
+  emailOrientadorEA3?: string;
+  supervisorEntidade?: string;
+  emailSupervisor?: string;
+  cargoSupervisor?: string;
+  horaInicio?: string;
+  horaFim?: string;
+
+  // Campos específicos para Ata de Reunião Orientador e Estagiário (Anexo IV)
+  numeroAta?: string;
+  diaReuniao?: string;
+  mesReuniao?: string;
+  horasReuniao?: string;
+  minutosReuniao?: string;
+  horasConclusao?: string;
+  localReuniao?: string;
+  ordemTrabalhos?: string;
+
+  // Campos específicos para Ata de Reunião Orientador, Supervisor e Estagiário (Anexo V)
+  numeroAtaEA5?: string;
+  diaReuniaoEA5?: string;
+  mesReuniaoEA5?: string;
+  horasReuniaoEA5?: string;
+  horasConclusaoEA5?: string;
+  escolaOrientador?: string;
+  ordemTrabalhosEA5?: string;
+
+  // Campos específicos para Parecer do Supervisor (Anexo IX)
+  atitudeDesempenho?: string;
+  aplicacaoConceitos?: string;
+  grauDificuldade?: string;
+
   [key: string]: string | number | boolean | undefined;
 }
 
@@ -62,10 +113,39 @@ export function AttachmentDetailPage() {
     }).format(date);
   };
 
+  const formatTime = (timeString?: string) => {
+    if (!timeString) return "-";
+    return timeString;
+  };
+
+  const getEmpresaLabel = (empresa?: string) => {
+    switch (empresa) {
+      case "bosch":
+        return "Bosch Car Multimedia Portugal, S.A.";
+      case "deloitte":
+        return "Deloitte Delivery Center. S.A. (Curso Tecnologias de Inovação Informática)";
+      case "outra":
+        return "Outra Empresa";
+      default:
+        return empresa || "-";
+    }
+  };
+
+  const getLocalEstagioLabel = (local?: string) => {
+    switch (local) {
+      case "sim":
+        return "Sim";
+      case "nao":
+        return "Não";
+      default:
+        return local || "-";
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loading message="Carregando attachment..." />
+        <Loading message="A carregar anexo..." />
       </div>
     );
   }
@@ -89,9 +169,31 @@ export function AttachmentDetailPage() {
     );
   }
 
-  const data = attachment.data && typeof attachment.data === 'string'
-    ? (JSON.parse(attachment.data) as AttachmentData)
-    : ({} as AttachmentData);
+  // Garantir que data seja um objeto válido
+  const processedData: AttachmentData = (() => {
+    if (!attachment.data) return {};
+
+    if (typeof attachment.data === "string") {
+      try {
+        return JSON.parse(attachment.data);
+      } catch (error) {
+        console.warn("Erro ao fazer parse do data:", error);
+        return {};
+      }
+    }
+
+    if (typeof attachment.data === "object" && attachment.data !== null) {
+      return attachment.data as AttachmentData;
+    }
+
+    return {};
+  })();
+
+  console.log("Dados finais processados:", processedData);
+
+  // Determinar o tipo de documento para mostrar campos específicos
+  const documentType = processedData.documentType;
+  const gdeType = processedData.gdeType;
 
   return (
     <div className="p-6 space-y-6">
@@ -116,19 +218,7 @@ export function AttachmentDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/attachments/${id}/edit`)}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Editar
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={handleDelete}
-          >
+          <Button variant="destructive" size="sm" onClick={handleDelete}>
             <Trash2 className="h-4 w-4 mr-2" />
             Excluir
           </Button>
@@ -147,7 +237,11 @@ export function AttachmentDetailPage() {
                 Tipo de GDE
               </label>
               <p className="text-sm">
-                {data.gdeType ? gdeTypeLabels[data.gdeType as keyof typeof gdeTypeLabels] : "-"}
+                {processedData.gdeType
+                  ? gdeTypeLabels[
+                      processedData.gdeType as keyof typeof gdeTypeLabels
+                    ]
+                  : "-"}
               </p>
             </div>
             <div>
@@ -155,9 +249,11 @@ export function AttachmentDetailPage() {
                 Tipo de Documento
               </label>
               <p className="text-sm">
-                {data.documentTypeLabel ||
-                  (data.documentType
-                    ? documentTypeLabels[data.documentType as keyof typeof documentTypeLabels]
+                {processedData.documentTypeLabel ||
+                  (processedData.documentType
+                    ? documentTypeLabels[
+                        processedData.documentType as keyof typeof documentTypeLabels
+                      ]
                     : "-")}
               </p>
             </div>
@@ -165,20 +261,22 @@ export function AttachmentDetailPage() {
               <label className="text-sm font-medium text-gray-500">
                 Data de Submissão
               </label>
-              <p className="text-sm">{formatDate(data.submittedAt)}</p>
+              <p className="text-sm">{formatDate(processedData.submittedAt)}</p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-500">
                 Status
               </label>
-              <p className="text-sm capitalize">{data.status || "pending"}</p>
+              <p className="text-sm capitalize">
+                {processedData.status || "pending"}
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Arquivo */}
-      {data.fileName && (
+      {processedData.fileName && (
         <Card>
           <CardHeader>
             <CardTitle>Arquivo</CardTitle>
@@ -186,9 +284,9 @@ export function AttachmentDetailPage() {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium">{data.fileName}</p>
+                <p className="font-medium">{processedData.fileName}</p>
                 <p className="text-sm text-gray-500">
-                  {formatFileSize(data.fileSize)}
+                  {formatFileSize(processedData.fileSize)}
                 </p>
               </div>
               <Button variant="outline" size="sm">
@@ -200,48 +298,461 @@ export function AttachmentDetailPage() {
         </Card>
       )}
 
-      {/* Dados Específicos */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Dados Específicos</CardTitle>
-          <CardDescription>
-            Campos específicos do tipo de documento
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {Object.entries(data).map(([key, value]) => {
-              // Pular campos básicos já mostrados
-              if (
-                [
-                  "gdeType",
-                  "documentType",
-                  "fileName",
-                  "fileSize",
-                  "submittedAt",
-                  "status",
-                  "documentTypeLabel",
-                ].includes(key)
-              ) {
-                return null;
-              }
+      {/* Campos específicos para Proposta de Estágio (Anexo I) */}
+      {documentType === "proposta-estagio" && gdeType === "emissao" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Proposta de Estágio (Anexo I)</CardTitle>
+            <CardDescription>
+              Campos específicos da proposta de estágio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Telefone do Aluno
+                </label>
+                <p className="text-sm">{processedData.telefoneAluno || "-"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Tem Local de Estágio
+                </label>
+                <p className="text-sm">
+                  {getLocalEstagioLabel(processedData.temLocalEstagio)}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-500">
+                  Temas ou Áreas Preferenciais
+                </label>
+                <p className="text-sm">{processedData.temasAreas || "-"}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Orientador Docente
+                </label>
+                <p className="text-sm">
+                  {processedData.orientadorDocente || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Email do Orientador
+                </label>
+                <p className="text-sm">
+                  {processedData.emailOrientador || "-"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-              if (!value || value === "") {
-                return null;
-              }
+      {/* Campos específicos para Protocolo de Estágio (Anexo II) */}
+      {documentType === "protocolo-estagio" && gdeType === "emissao" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Protocolo de Estágio (Anexo II)</CardTitle>
+            <CardDescription>
+              Campos específicos do protocolo de estágio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Data de Início de Estágio
+                </label>
+                <p className="text-sm">
+                  {formatDate(processedData.dataInicioEstagio)}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Data de Finalização de Estágio
+                </label>
+                <p className="text-sm">
+                  {formatDate(processedData.dataFinalizacaoEstagio)}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-500">
+                  Empresa onde irá estagiar
+                </label>
+                <p className="text-sm">
+                  {getEmpresaLabel(processedData.empresaEstagio)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-              return (
-                <div key={key} className="border-b pb-2">
-                  <label className="text-sm font-medium text-gray-500 capitalize">
-                    {key.replace(/([A-Z])/g, " $1").trim()}
+      {/* Campos específicos para Requerimento a Estágio com UCs em Atraso (Art. 14) */}
+      {documentType === "requerimento-ucs-atraso" && gdeType === "emissao" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              Requerimento a Estágio com UCs em Atraso (Art. 14)
+            </CardTitle>
+            <CardDescription>
+              Campos específicos do requerimento
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Telefone do Aluno
+                </label>
+                <p className="text-sm">
+                  {processedData.telefoneAlunoArt14 || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Número de UCs em Atraso
+                </label>
+                <p className="text-sm">
+                  {processedData.numeroUcsAtraso || "-"}
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-500">
+                  Nome das UCs em Atraso
+                </label>
+                <p className="text-sm">{processedData.nomeUcsAtraso || "-"}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Campos específicos para Plano de Estágio (Anexo III) */}
+      {documentType === "plano-estagio" && gdeType === "emissao" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Plano de Estágio (Anexo III)</CardTitle>
+            <CardDescription>
+              Campos específicos do plano de estágio
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-500">
+                  Temas ou Áreas Preferenciais
+                </label>
+                <p className="text-sm">{processedData.temasAreasEA3 || "-"}</p>
+              </div>
+              <div className="md:col-span-2">
+                <label className="text-sm font-medium text-gray-500">
+                  Objetivos e Plano de Trabalho
+                </label>
+                <p className="text-sm">
+                  {processedData.objetivosPlanoTrabalho || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Nome do Orientador (Docente)
+                </label>
+                <p className="text-sm">
+                  {processedData.nomeOrientadorEA3 || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Email do Orientador (Docente)
+                </label>
+                <p className="text-sm">
+                  {processedData.emailOrientadorEA3 || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Supervisor na Entidade de Acolhimento
+                </label>
+                <p className="text-sm">
+                  {processedData.supervisorEntidade || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Email do Supervisor
+                </label>
+                <p className="text-sm">
+                  {processedData.emailSupervisor || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Cargo do Supervisor
+                </label>
+                <p className="text-sm">
+                  {processedData.cargoSupervisor || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Horário de Estágio: Hora de Início
+                </label>
+                <p className="text-sm">
+                  {formatTime(processedData.horaInicio)}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Horário de Estágio: Hora de Fim
+                </label>
+                <p className="text-sm">{formatTime(processedData.horaFim)}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Campos específicos para Ata de Reunião Orientador e Estagiário (Anexo IV) */}
+      {documentType === "ata-reuniao-orientador-estagiario" &&
+        gdeType === "emissao" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Ata de Reunião Orientador e Estagiário (Anexo IV)
+              </CardTitle>
+              <CardDescription>
+                Campos específicos da ata de reunião
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Número da Ata
                   </label>
-                  <p className="text-sm mt-1">{String(value)}</p>
+                  <p className="text-sm">{processedData.numeroAta || "-"}</p>
                 </div>
-              );
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Dia da Reunião
+                  </label>
+                  <p className="text-sm">{processedData.diaReuniao || "-"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Mês da Reunião
+                  </label>
+                  <p className="text-sm">{processedData.mesReuniao || "-"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Horas da Reunião
+                  </label>
+                  <p className="text-sm">{processedData.horasReuniao || "-"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Minutos da Reunião
+                  </label>
+                  <p className="text-sm">
+                    {processedData.minutosReuniao || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Horas de Conclusão
+                  </label>
+                  <p className="text-sm">
+                    {processedData.horasConclusao || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Local da Reunião
+                  </label>
+                  <p className="text-sm">{processedData.localReuniao || "-"}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-500">
+                    Ordem de Trabalhos da Reunião
+                  </label>
+                  <p className="text-sm">
+                    {processedData.ordemTrabalhos || "-"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+      {/* Campos específicos para Ata de Reunião Orientador, Supervisor e Estagiário (Anexo V) */}
+      {documentType === "ata-reuniao-orientador-supervisor-estagiario" &&
+        gdeType === "emissao" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Ata de Reunião Orientador, Supervisor e Estagiário (Anexo V)
+              </CardTitle>
+              <CardDescription>
+                Campos específicos da ata de reunião
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Número da Ata
+                  </label>
+                  <p className="text-sm">{processedData.numeroAtaEA5 || "-"}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Dia da Reunião
+                  </label>
+                  <p className="text-sm">
+                    {processedData.diaReuniaoEA5 || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Mês da Reunião
+                  </label>
+                  <p className="text-sm">
+                    {processedData.mesReuniaoEA5 || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Horas da Reunião
+                  </label>
+                  <p className="text-sm">
+                    {processedData.horasReuniaoEA5 || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Horas de Conclusão
+                  </label>
+                  <p className="text-sm">
+                    {processedData.horasConclusaoEA5 || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Escola do Orientador (Docente)
+                  </label>
+                  <p className="text-sm">
+                    {processedData.escolaOrientador || "-"}
+                  </p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-500">
+                    Ordem de Trabalhos da Reunião
+                  </label>
+                  <p className="text-sm">
+                    {processedData.ordemTrabalhosEA5 || "-"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+      {/* Campos específicos para Parecer do Supervisor (Anexo IX) */}
+      {documentType === "parecer-supervisor" && gdeType === "emissao" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Parecer do Supervisor (Anexo IX)</CardTitle>
+            <CardDescription>
+              Campos específicos do parecer do supervisor
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Atitude e Desempenho (50% - 0-20 valores)
+                </label>
+                <p className="text-sm">
+                  {processedData.atitudeDesempenho || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Aplicação de Conceitos Aprendidos (30% - 0-20 valores)
+                </label>
+                <p className="text-sm">
+                  {processedData.aplicacaoConceitos || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Grau de Dificuldade (20% - 0-20 valores)
+                </label>
+                <p className="text-sm">
+                  {processedData.grauDificuldade || "-"}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Outros campos específicos (para documentos que não têm campos específicos definidos) */}
+      {gdeType === "emissao" &&
+        ![
+          "proposta-estagio",
+          "protocolo-estagio",
+          "requerimento-ucs-atraso",
+          "plano-estagio",
+          "ata-reuniao-orientador-estagiario",
+          "ata-reuniao-orientador-supervisor-estagiario",
+          "parecer-supervisor",
+        ].includes(documentType || "") && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Dados Específicos</CardTitle>
+              <CardDescription>
+                Campos específicos do tipo de documento
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Object.entries(processedData).map(([key, value]) => {
+                  // Pular campos básicos já mostrados
+                  if (
+                    [
+                      "gdeType",
+                      "documentType",
+                      "fileName",
+                      "fileSize",
+                      "submittedAt",
+                      "status",
+                      "documentTypeLabel",
+                    ].includes(key)
+                  ) {
+                    return null;
+                  }
+
+                  if (!value || value === "") {
+                    return null;
+                  }
+
+                  return (
+                    <div key={key} className="border-b pb-2">
+                      <label className="text-sm font-medium text-gray-500 capitalize">
+                        {key.replace(/([A-Z])/g, " $1").trim()}
+                      </label>
+                      <p className="text-sm mt-1">{String(value)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

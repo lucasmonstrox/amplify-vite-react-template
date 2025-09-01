@@ -33,6 +33,21 @@ export const attachmentSchema = z
     emailOrientador: z.string().email("Email inválido").optional(),
     temLocalEstagio: z.enum(["sim", "nao"]).optional(),
 
+    // Campos adicionais quando temLocalEstagio é "sim" (Proposta de Estágio)
+    nomeEntidadeAcolhimento: z.string().optional(),
+    moradaEntidadeAcolhimento: z.string().optional(),
+    codigoPostalEntidadeAcolhimento: z.string().optional(),
+    telefoneEntidadeAcolhimento: z.string().optional(),
+    emailEntidadeAcolhimento: z.string().email("Email inválido").optional(),
+    pessoaContactadaEntidadeAcolhimento: z.string().optional(),
+    cargoPessoaContactadaEntidadeAcolhimento: z.string().optional(),
+    supervisorEntidadeAcolhimento: z.string().optional(),
+    emailSupervisorEntidadeAcolhimento: z
+      .string()
+      .email("Email inválido")
+      .optional(),
+    cargoSupervisorEntidadeAcolhimento: z.string().optional(),
+
     // Campos específicos para Protocolo de Estágio (Anexo II)
     dataInicioEstagio: z.string().optional(),
     dataFinalizacaoEstagio: z.string().optional(),
@@ -86,7 +101,8 @@ export const attachmentSchema = z
         data.gdeType === "emissao" &&
         data.documentType === "proposta-estagio"
       ) {
-        return (
+        // Campos obrigatórios básicos
+        const basicFieldsValid =
           data.telefoneAluno &&
           data.telefoneAluno.trim() !== "" &&
           data.temasAreas &&
@@ -95,8 +111,36 @@ export const attachmentSchema = z
           data.orientadorDocente.trim() !== "" &&
           data.emailOrientador &&
           data.emailOrientador.trim() !== "" &&
-          data.temLocalEstagio
-        );
+          data.temLocalEstagio;
+
+        // Se tem local de estágio, validar campos adicionais
+        if (data.temLocalEstagio === "sim") {
+          return (
+            basicFieldsValid &&
+            data.nomeEntidadeAcolhimento &&
+            data.nomeEntidadeAcolhimento.trim() !== "" &&
+            data.moradaEntidadeAcolhimento &&
+            data.moradaEntidadeAcolhimento.trim() !== "" &&
+            data.codigoPostalEntidadeAcolhimento &&
+            data.codigoPostalEntidadeAcolhimento.trim() !== "" &&
+            data.telefoneEntidadeAcolhimento &&
+            data.telefoneEntidadeAcolhimento.trim() !== "" &&
+            data.emailEntidadeAcolhimento &&
+            data.emailEntidadeAcolhimento.trim() !== "" &&
+            data.pessoaContactadaEntidadeAcolhimento &&
+            data.pessoaContactadaEntidadeAcolhimento.trim() !== "" &&
+            data.cargoPessoaContactadaEntidadeAcolhimento &&
+            data.cargoPessoaContactadaEntidadeAcolhimento.trim() !== "" &&
+            data.supervisorEntidadeAcolhimento &&
+            data.supervisorEntidadeAcolhimento.trim() !== "" &&
+            data.emailSupervisorEntidadeAcolhimento &&
+            data.emailSupervisorEntidadeAcolhimento.trim() !== "" &&
+            data.cargoSupervisorEntidadeAcolhimento &&
+            data.cargoSupervisorEntidadeAcolhimento.trim() !== ""
+          );
+        }
+
+        return basicFieldsValid;
       }
       return true;
     },

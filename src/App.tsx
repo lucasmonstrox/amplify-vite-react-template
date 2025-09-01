@@ -1,4 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Toaster } from "sonner";
 import { AmplifyProvider } from "./providers/amplify-provider";
 import { AuthProvider } from "./providers/auth-provider";
 import { Header } from "./components/header";
@@ -19,10 +25,22 @@ function App() {
                   <Header />
                   <main className="max-w-4xl mx-auto px-4 py-6">
                     <Routes>
-                      <Route path="/attachments" element={<AttachmentsListPage />} />
-                      <Route path="/attachments/new" element={<NewAttachmentPage />} />
-                      <Route path="/attachments/:id" element={<AttachmentDetailPage />} />
-                      <Route path="/" element={<Navigate to="/attachments" replace />} />
+                      <Route
+                        path="/attachments"
+                        element={<AttachmentsListPage />}
+                      />
+                      <Route
+                        path="/attachments/new"
+                        element={<NewAttachmentPage />}
+                      />
+                      <Route
+                        path="/attachments/:id"
+                        element={<AttachmentDetailPage />}
+                      />
+                      <Route
+                        path="/"
+                        element={<Navigate to="/attachments" replace />}
+                      />
                     </Routes>
                   </main>
                 </AuthProvider>
@@ -30,6 +48,7 @@ function App() {
             />
           </Routes>
         </div>
+        <Toaster />
       </Router>
     </AmplifyProvider>
   );

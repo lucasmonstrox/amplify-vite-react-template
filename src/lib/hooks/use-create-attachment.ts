@@ -22,7 +22,6 @@ export function useCreateAttachment() {
           fileName: formData.file?.name,
           fileSize: formData.file?.size,
           submittedAt: new Date().toISOString(),
-          status: "pending",
 
           // Campos específicos para Proposta de Estágio (Anexo I)
           telefoneAluno: formData.telefoneAluno,
@@ -30,6 +29,23 @@ export function useCreateAttachment() {
           orientadorDocente: formData.orientadorDocente,
           emailOrientador: formData.emailOrientador,
           temLocalEstagio: formData.temLocalEstagio,
+
+          // Campos adicionais quando temLocalEstagio é "sim"
+          nomeEntidadeAcolhimento: formData.nomeEntidadeAcolhimento,
+          moradaEntidadeAcolhimento: formData.moradaEntidadeAcolhimento,
+          codigoPostalEntidadeAcolhimento:
+            formData.codigoPostalEntidadeAcolhimento,
+          telefoneEntidadeAcolhimento: formData.telefoneEntidadeAcolhimento,
+          emailEntidadeAcolhimento: formData.emailEntidadeAcolhimento,
+          pessoaContactadaEntidadeAcolhimento:
+            formData.pessoaContactadaEntidadeAcolhimento,
+          cargoPessoaContactadaEntidadeAcolhimento:
+            formData.cargoPessoaContactadaEntidadeAcolhimento,
+          supervisorEntidadeAcolhimento: formData.supervisorEntidadeAcolhimento,
+          emailSupervisorEntidadeAcolhimento:
+            formData.emailSupervisorEntidadeAcolhimento,
+          cargoSupervisorEntidadeAcolhimento:
+            formData.cargoSupervisorEntidadeAcolhimento,
 
           // Campos específicos para Protocolo de Estágio (Anexo II)
           dataInicioEstagio: formData.dataInicioEstagio,
@@ -80,13 +96,12 @@ export function useCreateAttachment() {
         // Remover campos undefined/null
         const cleanData = Object.fromEntries(
           Object.entries(attachmentData).filter(
-            ([, value]) =>
-              value !== undefined && value !== null && value !== ""
+            ([, value]) => value !== undefined && value !== null && value !== ""
           )
         );
 
         const response = await client.models.Attachment.create({
-          data: cleanData,
+          data: JSON.stringify(cleanData),
         });
 
         return response.data;

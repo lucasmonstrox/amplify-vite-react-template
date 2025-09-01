@@ -3,7 +3,9 @@ import type { Schema } from "../../amplify/data/resource";
 
 const client = generateClient<Schema>();
 
-export const subscribeToAttachmentCreated = (callback: (attachment: Schema["Attachment"]["type"]) => void) => {
+export const subscribeToAttachmentCreated = (
+  callback: (attachment: Schema["Attachment"]["type"]) => void
+) => {
   return client.models.Attachment.onCreate().subscribe({
     next: (attachment) => {
       callback(attachment);
@@ -14,7 +16,9 @@ export const subscribeToAttachmentCreated = (callback: (attachment: Schema["Atta
   });
 };
 
-export const subscribeToAttachmentUpdated = (callback: (attachment: Schema["Attachment"]["type"]) => void) => {
+export const subscribeToAttachmentUpdated = (
+  callback: (attachment: Schema["Attachment"]["type"]) => void
+) => {
   return client.models.Attachment.onUpdate().subscribe({
     next: (attachment) => {
       callback(attachment);
@@ -25,7 +29,9 @@ export const subscribeToAttachmentUpdated = (callback: (attachment: Schema["Atta
   });
 };
 
-export const subscribeToAttachmentDeleted = (callback: (attachment: Schema["Attachment"]["type"]) => void) => {
+export const subscribeToAttachmentDeleted = (
+  callback: (attachment: Schema["Attachment"]["type"]) => void
+) => {
   return client.models.Attachment.onDelete().subscribe({
     next: (attachment) => {
       callback(attachment);

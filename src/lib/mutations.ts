@@ -13,7 +13,6 @@ export const createAttachment = async (formData: AttachmentFormData) => {
       fileName: formData.file?.name,
       fileSize: formData.file?.size,
       submittedAt: new Date().toISOString(),
-      status: "pending",
 
       // Campos específicos para Proposta de Estágio (Anexo I)
       telefoneAluno: formData.telefoneAluno,
@@ -82,19 +81,6 @@ export const createAttachment = async (formData: AttachmentFormData) => {
     return response.data;
   } catch (error) {
     console.error("Erro ao criar attachment:", error);
-    throw error;
-  }
-};
-
-export const updateAttachment = async (id: string, data: Record<string, unknown>) => {
-  try {
-    const response = await client.models.Attachment.update({
-      id,
-      data,
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Erro ao atualizar attachment:", error);
     throw error;
   }
 };
