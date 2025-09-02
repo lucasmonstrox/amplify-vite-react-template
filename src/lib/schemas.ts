@@ -93,6 +93,7 @@ export const attachmentSchema = z
     aplicacaoConceitos: z.string().optional(),
     grauDificuldade: z.string().optional(),
     file: z.instanceof(File).optional(),
+    data: z.string().optional(),
   })
   .refine(
     (data) => {
