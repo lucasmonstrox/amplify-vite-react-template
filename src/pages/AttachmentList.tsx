@@ -215,12 +215,6 @@ export function AttachmentsListPage() {
                   <SelectItem value="ata-reuniao-orientador-supervisor-estagiario">
                     Ata de Reunião Orientador, Supervisor e Estagiário
                   </SelectItem>
-                  <SelectItem value="registro-presencas-diarias">
-                    Registo de Presenças Diárias
-                  </SelectItem>
-                  <SelectItem value="parecer-orientador">
-                    Parecer do Orientador
-                  </SelectItem>
                   <SelectItem value="parecer-supervisor">
                     Parecer do Supervisor
                   </SelectItem>

@@ -40,7 +40,23 @@ export function useAttachmentList() {
         }
       });
 
-      setAttachments(processedAttachments);
+      // Ordena os attachments pela data de submissão (do mais recente para o menos recente)
+      const sortedAttachments = processedAttachments.sort((a, b) => {
+        const dataA = a.data as any;
+        const dataB = b.data as any;
+
+        const dateA = dataA?.submittedAt
+          ? new Date(dataA.submittedAt)
+          : new Date(0);
+        const dateB = dataB?.submittedAt
+          ? new Date(dataB.submittedAt)
+          : new Date(0);
+
+        // Ordenação decrescente (mais recente primeiro)
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      setAttachments(sortedAttachments);
     } catch (err) {
       console.error("Erro ao buscar attachments:", err);
       setError(err instanceof Error ? err.message : "Erro desconhecido");

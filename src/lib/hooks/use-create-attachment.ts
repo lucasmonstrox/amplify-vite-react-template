@@ -51,6 +51,11 @@ export function useCreateAttachment() {
           dataInicioEstagio: formData.dataInicioEstagio,
           dataFinalizacaoEstagio: formData.dataFinalizacaoEstagio,
           empresaEstagio: formData.empresaEstagio,
+          nomeRepresentanteEntidadeAcolhimento:
+            formData.nomeRepresentanteEntidadeAcolhimento,
+          nipcEntidadeAcolhimento: formData.nipcEntidadeAcolhimento,
+          caeEntidadeAcolhimento: formData.caeEntidadeAcolhimento,
+          localEstagio: formData.localEstagio,
 
           // Campos específicos para Requerimento a Estágio com UCs em Atraso (Art. 14)
           telefoneAlunoArt14: formData.telefoneAlunoArt14,
@@ -91,6 +96,11 @@ export function useCreateAttachment() {
           atitudeDesempenho: formData.atitudeDesempenho,
           aplicacaoConceitos: formData.aplicacaoConceitos,
           grauDificuldade: formData.grauDificuldade,
+
+          // Campos específicos para Requerimento de Adiamento de Entrega do Relatório de Estágio (Anexo X)
+          escolaAluno: formData.escolaAluno,
+          motivosAdiamento: formData.motivosAdiamento,
+          adiamentoAte: formData.adiamentoAte,
         };
 
         // Remover campos undefined/null

@@ -7,8 +7,6 @@ export type DocumentType =
   | "plano-estagio"
   | "ata-reuniao-orientador-estagiario"
   | "ata-reuniao-orientador-supervisor-estagiario"
-  | "registro-presencas-diarias"
-  | "parecer-orientador"
   | "parecer-supervisor"
   | "requerimento-adiamento-relatorio"
   | "relatorio-estagio";
@@ -34,8 +32,6 @@ export const documentTypeLabels: Record<DocumentType, string> = {
     "Ata de Reunião Orientador e Estagiário (Anexo IV)",
   "ata-reuniao-orientador-supervisor-estagiario":
     "Ata de Reunião Orientador, Supervisor e Estagiário (Anexo V)",
-  "registro-presencas-diarias": "Registo de Presenças Diárias (Anexo VI)",
-  "parecer-orientador": "Parecer do Orientador (Anexo VIII)",
   "parecer-supervisor": "Parecer do Supervisor (Anexo IX)",
   "requerimento-adiamento-relatorio":
     "Requerimento de Adiamento de Entrega do Relatório de Estágio (Anexo X)",

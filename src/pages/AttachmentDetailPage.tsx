@@ -29,10 +29,26 @@ interface AttachmentData {
   emailOrientador?: string;
   temLocalEstagio?: string;
 
+  // Campos condicionais da entidade de acolhimento (8-17)
+  nomeEntidadeAcolhimento?: string;
+  moradaEntidadeAcolhimento?: string;
+  codigoPostalEntidadeAcolhimento?: string;
+  telefoneEntidadeAcolhimento?: string;
+  emailEntidadeAcolhimento?: string;
+  pessoaContactadaEntidadeAcolhimento?: string;
+  cargoPessoaContactadaEntidadeAcolhimento?: string;
+  supervisorEntidadeAcolhimento?: string;
+  emailSupervisorEntidadeAcolhimento?: string;
+  cargoSupervisorEntidadeAcolhimento?: string;
+
   // Campos específicos para Protocolo de Estágio (Anexo II)
   dataInicioEstagio?: string;
   dataFinalizacaoEstagio?: string;
   empresaEstagio?: string;
+  nomeRepresentanteEntidadeAcolhimento?: string;
+  nipcEntidadeAcolhimento?: string;
+  caeEntidadeAcolhimento?: string;
+  localEstagio?: string;
 
   // Campos específicos para Requerimento a Estágio com UCs em Atraso (Art. 14)
   telefoneAlunoArt14?: string;
@@ -73,6 +89,11 @@ interface AttachmentData {
   atitudeDesempenho?: string;
   aplicacaoConceitos?: string;
   grauDificuldade?: string;
+
+  // Campos específicos para Requerimento de Adiamento de Entrega do Relatório de Estágio (Anexo X)
+  escolaAluno?: string;
+  motivosAdiamento?: string;
+  adiamentoAte?: string;
 
   [key: string]: string | number | boolean | undefined;
 }
@@ -263,14 +284,6 @@ export function AttachmentDetailPage() {
               </label>
               <p className="text-sm">{formatDate(processedData.submittedAt)}</p>
             </div>
-            <div>
-              <label className="text-sm font-medium text-gray-500">
-                Status
-              </label>
-              <p className="text-sm capitalize">
-                {processedData.status || "pending"}
-              </p>
-            </div>
           </div>
         </CardContent>
       </Card>
@@ -350,6 +363,105 @@ export function AttachmentDetailPage() {
         </Card>
       )}
 
+      {/* Campos condicionais da entidade de acolhimento (8-17) */}
+      {documentType === "proposta-estagio" &&
+        gdeType === "emissao" &&
+        processedData.temLocalEstagio === "sim" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Entidade de Acolhimento</CardTitle>
+              <CardDescription>
+                Informações da entidade onde será realizado o estágio
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Nome da Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.nomeEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Morada da Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.moradaEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Código Postal da Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.codigoPostalEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Telefone da Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.telefoneEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Email da Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.emailEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Pessoa Contactada na Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.pessoaContactadaEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Cargo da Pessoa Contactada na Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.cargoPessoaContactadaEntidadeAcolhimento ||
+                      "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Supervisor na Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.supervisorEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Email do Supervisor na Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.emailSupervisorEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Cargo do Supervisor na Entidade de Acolhimento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.cargoSupervisorEntidadeAcolhimento || "-"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
       {/* Campos específicos para Protocolo de Estágio (Anexo II) */}
       {documentType === "protocolo-estagio" && gdeType === "emissao" && (
         <Card>
@@ -384,6 +496,52 @@ export function AttachmentDetailPage() {
                 <p className="text-sm">
                   {getEmpresaLabel(processedData.empresaEstagio)}
                 </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Campos adicionais para Protocolo de Estágio (Anexo II) - Step 3 */}
+      {documentType === "protocolo-estagio" && gdeType === "emissao" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Informações da Entidade de Acolhimento</CardTitle>
+            <CardDescription>
+              Campos específicos da entidade de acolhimento
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Nome do Representante da Entidade de Acolhimento
+                </label>
+                <p className="text-sm">
+                  {processedData.nomeRepresentanteEntidadeAcolhimento || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  NIPC da Entidade de Acolhimento
+                </label>
+                <p className="text-sm">
+                  {processedData.nipcEntidadeAcolhimento || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  CAE da Entidade de Acolhimento
+                </label>
+                <p className="text-sm">
+                  {processedData.caeEntidadeAcolhimento || "-"}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Local de Estágio
+                </label>
+                <p className="text-sm">{processedData.localEstagio || "-"}</p>
               </div>
             </div>
           </CardContent>
@@ -700,6 +858,46 @@ export function AttachmentDetailPage() {
         </Card>
       )}
 
+      {/* Campos específicos para Requerimento de Adiamento de Entrega do Relatório de Estágio (Anexo X) */}
+      {documentType === "requerimento-adiamento-relatorio" &&
+        gdeType === "emissao" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                Requerimento de Adiamento de Entrega do Relatório de Estágio
+                (Anexo X)
+              </CardTitle>
+              <CardDescription>
+                Campos específicos do requerimento de adiamento
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Escola do aluno
+                  </label>
+                  <p className="text-sm">{processedData.escolaAluno || "-"}</p>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="text-sm font-medium text-gray-500">
+                    4.(EA10) Motivos de adiamento
+                  </label>
+                  <p className="text-sm">
+                    {processedData.motivosAdiamento || "-"}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    5.(EA10) Adiamento até?
+                  </label>
+                  <p className="text-sm">{processedData.adiamentoAte || "-"}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
       {/* Outros campos específicos (para documentos que não têm campos específicos definidos) */}
       {gdeType === "emissao" &&
         ![
@@ -710,6 +908,7 @@ export function AttachmentDetailPage() {
           "ata-reuniao-orientador-estagiario",
           "ata-reuniao-orientador-supervisor-estagiario",
           "parecer-supervisor",
+          "requerimento-adiamento-relatorio",
         ].includes(documentType || "") && (
           <Card>
             <CardHeader>

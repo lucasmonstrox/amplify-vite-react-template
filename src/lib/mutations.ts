@@ -6,7 +6,34 @@ const client = generateClient<Schema>();
 
 export const createAttachment = async (formData: AttachmentFormData) => {
   try {
-    // Preparar os dados para o campo "data"
+    console.log("=== INICIANDO MUTATION ===");
+    console.log("formData recebido:", formData);
+    console.log("formData.data:", formData.data);
+    console.log("Tipo de formData.data:", typeof formData.data);
+
+    // Se formData.data existe, usar ele diretamente (já contém todos os dados)
+    if (formData.data) {
+      console.log("Usando dados do campo 'data':", formData.data);
+
+      // Parse do JSON para incluir todos os campos
+      let parsedData;
+      try {
+        parsedData = JSON.parse(formData.data);
+        console.log("Dados parseados:", parsedData);
+      } catch (error) {
+        console.error("Erro ao fazer parse do data:", error);
+        parsedData = {};
+      }
+
+      const response = await client.models.Attachment.create({
+        data: parsedData,
+      });
+
+      console.log("Response da criação:", response);
+      return response.data;
+    }
+
+    // Caso contrário, preparar os dados manualmente
     const attachmentData = {
       gdeType: formData.gdeType,
       documentType: formData.documentType,
@@ -65,7 +92,15 @@ export const createAttachment = async (formData: AttachmentFormData) => {
       atitudeDesempenho: formData.atitudeDesempenho,
       aplicacaoConceitos: formData.aplicacaoConceitos,
       grauDificuldade: formData.grauDificuldade,
+
+      // Campos específicos para Requerimento de Adiamento de Entrega do Relatório de Estágio (Anexo X)
+      escolaAluno: formData.escolaAluno,
+      motivosAdiamento: formData.motivosAdiamento,
+      adiamentoAte: formData.adiamentoAte,
     };
+
+    // Log dos dados antes da limpeza
+    console.log("Dados antes da limpeza:", attachmentData);
 
     // Remover campos undefined/null
     const cleanData = Object.fromEntries(
@@ -73,6 +108,9 @@ export const createAttachment = async (formData: AttachmentFormData) => {
         ([, value]) => value !== undefined && value !== null && value !== ""
       )
     );
+
+    // Log dos dados após a limpeza
+    console.log("Dados após a limpeza:", cleanData);
 
     const response = await client.models.Attachment.create({
       data: cleanData,

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import { Button } from "../components/ui/button";
 import {
@@ -49,11 +49,6 @@ const documentOptions = [
     value: "ata-reuniao-orientador-supervisor-estagiario",
     label: "Ata de Reunião Orientador, Supervisor e Estagiário (Anexo V)",
   },
-  {
-    value: "registro-presencas-diarias",
-    label: "Registo de Presenças Diárias (Anexo VI)",
-  },
-  { value: "parecer-orientador", label: "Parecer do Orientador (Anexo VIII)" },
   { value: "parecer-supervisor", label: "Parecer do Supervisor (Anexo IX)" },
   {
     value: "requerimento-adiamento-relatorio",
@@ -71,11 +66,25 @@ export function AttachmentForm() {
     error: createError,
   } = useCreateAttachment();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState<number>(1);
   const [, setError] = useState<string | null>(null);
 
+  // Determine the maximum number of steps based on the form type
+  const getMaxSteps = () => {
+    if (
+      watchedGdeType === "emissao" &&
+      watchedDocumentType === "protocolo-estagio"
+    ) {
+      return 3;
+    }
+    if (shouldShowSecondStep) {
+      return 2;
+    }
+    return 1;
+  };
+
   const form = useForm<AttachmentFormData>({
-    resolver: zodResolver(attachmentSchema),
+    resolver: zodResolver(attachmentSchema) as Resolver<AttachmentFormData>,
     defaultValues: {
       gdeType: undefined,
       documentType: undefined,
@@ -98,6 +107,10 @@ export function AttachmentForm() {
       dataInicioEstagio: "",
       dataFinalizacaoEstagio: "",
       empresaEstagio: undefined,
+      nomeRepresentanteEntidadeAcolhimento: "",
+      nipcEntidadeAcolhimento: "",
+      caeEntidadeAcolhimento: "",
+      localEstagio: "",
       telefoneAlunoArt14: "",
       numeroUcsAtraso: "",
       nomeUcsAtraso: "",
@@ -128,6 +141,9 @@ export function AttachmentForm() {
       atitudeDesempenho: "",
       aplicacaoConceitos: "",
       grauDificuldade: "",
+      escolaAluno: "",
+      motivosAdiamento: "",
+      adiamentoAte: "",
     },
   });
 
@@ -146,11 +162,6 @@ export function AttachmentForm() {
   console.log("=== VALORES DOS CAMPOS ===");
   console.log("gdeType:", formValues.gdeType);
   console.log("documentType:", formValues.documentType);
-  console.log("telefoneAluno:", formValues.telefoneAluno);
-  console.log("temasAreas:", formValues.temasAreas);
-  console.log("orientadorDocente:", formValues.orientadorDocente);
-  console.log("emailOrientador:", formValues.emailOrientador);
-  console.log("temLocalEstagio:", formValues.temLocalEstagio);
 
   // Debug: Log detalhado dos erros
   if (Object.keys(form.formState.errors).length > 0) {
@@ -169,7 +180,8 @@ export function AttachmentForm() {
       watchedDocumentType === "plano-estagio" ||
       watchedDocumentType === "ata-reuniao-orientador-estagiario" ||
       watchedDocumentType === "ata-reuniao-orientador-supervisor-estagiario" ||
-      watchedDocumentType === "parecer-supervisor");
+      watchedDocumentType === "parecer-supervisor" ||
+      watchedDocumentType === "requerimento-adiamento-relatorio");
 
   // Verifica se deve mostrar campos específicos para cada tipo
   const shouldShowPropostaFields =
@@ -190,20 +202,26 @@ export function AttachmentForm() {
   const shouldShowParecerSupervisorFields =
     watchedGdeType === "emissao" &&
     watchedDocumentType === "parecer-supervisor";
+  const shouldShowRequerimentoAdiamentoFields =
+    watchedGdeType === "emissao" &&
+    watchedDocumentType === "requerimento-adiamento-relatorio";
 
   // Verifica se deve mostrar o campo de arquivo (apenas para Submissão)
   const shouldShowFileField = watchedGdeType === "submissao";
 
   function handleNextStep() {
-    if (currentStep === 1 && shouldShowSecondStep) {
-      setCurrentStep(2);
+    const maxSteps = getMaxSteps();
+    if (currentStep < maxSteps) {
+      setCurrentStep(currentStep + 1);
     } else {
       form.handleSubmit(onSubmit)();
     }
   }
 
   function handlePreviousStep() {
-    setCurrentStep(1);
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   }
 
   async function onSubmit(data: AttachmentFormData) {
@@ -215,11 +233,25 @@ export function AttachmentForm() {
         ...data,
       });
 
+      // Log detalhado dos campos específicos
+      console.log("=== CAMPOS ESPECÍFICOS ===");
+      console.log("escolaAluno:", data.escolaAluno);
+      console.log("motivosAdiamento:", data.motivosAdiamento);
+      console.log("adiamentoAte:", data.adiamentoAte);
+
       // Criar o attachment usando a mutation
-      const newAttachment = await createAttachment({
+      console.log("=== DADOS ANTES DE ENVIAR PARA MUTATION ===");
+      console.log("data original:", data);
+      console.log("JSON.stringify(data):", JSON.stringify(data));
+
+      const dataToSend = {
         ...data,
         data: JSON.stringify(data),
-      });
+      };
+
+      console.log("dataToSend completo:", dataToSend);
+
+      const newAttachment = await createAttachment(dataToSend);
       toast.success("Feito!");
 
       // Limpar formulário
@@ -265,7 +297,9 @@ export function AttachmentForm() {
         <CardDescription className="text-center">
           {currentStep === 1
             ? "Passo 1: Selecione o tipo de GDE e documento"
-            : "Passo 2: Preencha as informações adicionais"}
+            : currentStep === 2
+            ? "Passo 2: Preencha as informações adicionais"
+            : "Passo 3: Informações da entidade de acolhimento"}
         </CardDescription>
         {/* Indicador de progresso */}
         <div className="flex items-center justify-center space-x-2 mt-4">
@@ -277,6 +311,11 @@ export function AttachmentForm() {
           <div
             className={`w-3 h-3 rounded-full ${
               currentStep >= 2 ? "bg-primary" : "bg-gray-300"
+            }`}
+          />
+          <div
+            className={`w-3 h-3 rounded-full ${
+              currentStep >= 3 ? "bg-primary" : "bg-gray-300"
             }`}
           />
         </div>
@@ -347,7 +386,12 @@ export function AttachmentForm() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-base font-semibold">
-                        2. GDE
+                        2. GDE{" "}
+                        {watchedGdeType === "emissao"
+                          ? "(Emitir anexo)"
+                          : watchedGdeType === "submissao"
+                          ? "(Submeter anexo)"
+                          : ""}
                       </FormLabel>
                       <Select
                         onValueChange={field.onChange}
@@ -1473,8 +1517,164 @@ export function AttachmentForm() {
                     />
                   </>
                 )}
+
+                {/* Campos para Requerimento de Adiamento de Entrega do Relatório de Estágio (Anexo X) */}
+                {shouldShowRequerimentoAdiamentoFields && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="escolaAluno"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-semibold">
+                            Escola do aluno
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Introduza a sua resposta"
+                              {...field}
+                              disabled={createLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="motivosAdiamento"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-semibold">
+                            4.(EA10) Motivos de adiamento
+                          </FormLabel>
+                          <FormControl>
+                            <textarea
+                              placeholder="Introduza a sua resposta"
+                              className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              {...field}
+                              disabled={createLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="adiamentoAte"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-base font-semibold">
+                            5.(EA10) Adiamento até?
+                          </FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Introduza a sua resposta"
+                              {...field}
+                              disabled={createLoading}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
               </>
             )}
+
+            {/* Terceiro Step - Campos adicionais para Protocolo de Estágio (Anexo II) */}
+            {currentStep === 3 &&
+              watchedGdeType === "emissao" &&
+              watchedDocumentType === "protocolo-estagio" && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="nomeRepresentanteEntidadeAcolhimento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">
+                          6.(EA2) Nome do representante da entidade de
+                          acolhimento
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Introduza a sua resposta"
+                            {...field}
+                            disabled={createLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="nipcEntidadeAcolhimento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">
+                          7.(EA2) NIPC da entidade de acolhimento
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="O valor tem de ser um número"
+                            {...field}
+                            disabled={createLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="caeEntidadeAcolhimento"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">
+                          8.(EA2) CAE da entidade de acolhimento
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            placeholder="O valor tem de ser um número"
+                            {...field}
+                            disabled={createLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="localEstagio"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base font-semibold">
+                          9.(EA2) Local de estágio
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Introduza a sua resposta"
+                            {...field}
+                            disabled={createLoading}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
 
             {/* Campo de arquivo apenas para Submissão */}
             {shouldShowFileField && (
@@ -1518,7 +1718,7 @@ export function AttachmentForm() {
 
             {/* Botões de navegação */}
             <div className="flex space-x-4">
-              {currentStep === 2 && (
+              {(currentStep === 2 || currentStep === 3) && (
                 <Button
                   type="button"
                   variant="outline"
@@ -1533,6 +1733,10 @@ export function AttachmentForm() {
                 {createLoading
                   ? "A enviar..."
                   : currentStep === 1
+                  ? "Próximo"
+                  : currentStep === 2 &&
+                    watchedGdeType === "emissao" &&
+                    watchedDocumentType === "protocolo-estagio"
                   ? "Próximo"
                   : "Enviar Anexo"}
               </Button>
